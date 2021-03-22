@@ -1,8 +1,9 @@
 import cv2 as cv
 import numpy as np
+import math 
 
 if __name__=="__main__":
-    for i in range(1,36):
+    for i in range(35,38):
         imageread = "../test/img/"   
         imageread += (str(i)+".jpg")
 
@@ -47,7 +48,7 @@ if __name__=="__main__":
         # thresh2 : adaptive threasholding
 
         # cv.imwrite(image_threshold, thresh1)
-        cv.imwrite(image_adathreshold, thresh2)
+        # cv.imwrite(image_adathreshold, thresh2)
         
         kernel   = np.ones((3, 3), np.uint8)
         cannyimg = cv.dilate(cannyimg, kernel, iterations=1)
@@ -89,13 +90,65 @@ if __name__=="__main__":
                 # box = cv.minAreaRect(contour)
                 # box = np.int0(cv.boxPoints(box))  # –> int0會省略小數點後方的數字
                 # cv.drawContours(cannyimg2, [box], -1, (0, 255, 0), 2)
-                cv.drawContours(cannyimg2, [approx], -1, (0, 255, 0), 2)
+                # cv.drawContours(cannyimg2, [approx], -1, (0, 255, 0), 2)
+                if(len(approx) == 4):
+                    a = []
+                    dis = []
+                    for tmp in approx:
+                        a.append(tmp[0][0])
+                        a.append(tmp[0][1])
+                        print(tmp[0][0], tmp[0][1]," ")
+                    sidelen = []
+                    sideangle = []
+                    for tmp in dis:
+                        print(tmp)
+
+                    for j in range(0,4):
+                        if j==3: 
+                            k=0
+                        else:
+                            k=1+j
+                        print(a[k*2], a[j*2], a[k*2+1], a[j*2+1],
+                              np.sqrt(pow(abs(a[k*2]-a[j*2]), 2)+pow(abs(a[k*2+1]-a[j*2+1]), 2)))
+                        sidelen.append(np.sqrt(pow(abs(a[k*2]-a[j*2]),2)+pow(abs(a[k*2+1]-a[j*2+1]),2)))
+                    flag = 1
+                    print()
+
+                    maxlen = max(sidelen)
+                    minlen = min(sidelen)
+
+                    sidelen.append(
+                        np.sqrt(pow(abs(a[2]-a[6]), 2)+pow(abs(a[3]-a[7]), 2)))
+
+                    sidelen.append(
+                        np.sqrt(pow(abs(a[0]-a[4]), 2)+pow(abs(a[1]-a[5]), 2)))
+
+                    sideangle.append(math.degrees(np.arccos((sidelen[0]**2+sidelen[3]**2-sidelen[4]**2)/(2*sidelen[0]*sidelen[3]))))
+                    sideangle.append(math.degrees(np.arccos((sidelen[0]**2+sidelen[1]**2-sidelen[5]**2)/(2*sidelen[0]*sidelen[1]))))
+                    sideangle.append(math.degrees(np.arccos((sidelen[1]**2+sidelen[2]**2-sidelen[4]**2)/(2*sidelen[1]*sidelen[2]))))
+                    sideangle.append(math.degrees(np.arccos((sidelen[2]**2+sidelen[3]**2-sidelen[5]**2)/(2*sidelen[2]*sidelen[3]))))
+
+                    # print(np.arccos(sideangle[0]))
+                    # print(maxlen,minlen)
+                    # print( )
+
+                    for tmp in sideangle:
+                        print(tmp)
+
+                    maxangle = max(sideangle)
+                    minangle = min(sideangle)
+                    print(maxangle," ",minangle)
+
+                    if(maxlen-minlen>5 or maxangle>93 or minangle<87):
+                        flag = 0
+                    if(flag):
+                        cv.drawContours(originImg, [approx], -1, (0, 255, 0), 2)
                 # x, y, w, h = cv.boundingRect(contour)
                 # imageFrame = cv.rectangle(
                 #     cannyimg2, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
         # cv.imwrite(Cannycontour, cannyimg)
-        cv.imwrite(ContourExternal, cannyimg2)
+        cv.imwrite(ContourExternal, originImg)
         # cv.imwrite(Thresoldcontour, thresh1)
         # cv.imwrite(ThresoldcontourExternal, thresh2)
 
